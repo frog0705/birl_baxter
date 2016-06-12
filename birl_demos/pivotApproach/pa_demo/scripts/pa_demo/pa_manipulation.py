@@ -7,7 +7,7 @@ import rospy
 import baxter_interface
 from baxter_interface import CHECK_VERSION
 from hand_action import GripperClient
-from arm_action import (computerIK, computerApproachPose)
+from arm_action import (computeIK, computeApproachPose)
 
 from pa_localization.msg import pa_location
 from birl_recorded_motions import paHome_rightArm as rh
@@ -23,6 +23,23 @@ reference_origin_pose_flag = 1 		# Used to determine whether to used the saved j
                                     # for the reference origin position (true) or not (false).
 reference_placing_pose_flag = 1 	# Used to determine whether to used the saved joint angle data
                                     # for the reference placing position (true) or not (false).
+
+# File Paths. If not in root, make sure string dose not start with /
+USER_PATH='/home/vmrguser/'
+RESULTS_PATH='ros/indigo/baxter_ws/src/birl_baxter/birl_demos/pa_demo/bags/'
+STATE_FILE='State.dat'
+#------------------------------------ Class ___________ ------------------------------
+class writeTime(object):
+    def __init__(self):
+       self.fPath=os.path.join(USER_PATH,RESULTS_PATH,STATE_FILE)
+       self.ostr_state=open(self.fPath,'w')
+
+    def write(self,value):
+        self.ostr_state.write(str(value)+'\n')
+
+    # Should be passed to the rospy.on_shutdown() method so that the file is closed automatically. 
+    def close(self):
+        self.ostr_state.close()
 
 class Thread(threading.Thread):
     def __init__(self):
@@ -52,6 +69,9 @@ def main():
         help='send joint trajectory to which limb')
     args = parser.parse_args(rospy.myargv()[1:]) # return objects
 
+    # Create file writing object
+    wT=writeTime()
+
     # Set limb and gripper side
     limb = args.limb
     ha=GripperClient(limb)
@@ -78,19 +98,19 @@ def main():
     ha.open()
     rospy.sleep(1.0)
 
-    # Create kinematics method
-    kin=computerIK()
-    cal_pose=computerApproachPose(limb)
+    # Create 2 objects: (i) ik_solver and (ii) compute an approach pose.
+    kin=computeIK()
+    cal_pose=computeApproachPose(limb)
 
-    # Get Starting Position
+    # Get Starting Pose for the arm and its joints
     startPose=arm.endpoint_pose()
     startJoints=kin.calIK_PY_KDL(limb,startPose)
 
-    # Put the male part on the table
-    rospy.loginfo('Please put the male part on the table, and I will capture the location for picking')
+    # Let the user place the male assembly part on the table for the robot to pick.
+    rospy.loginfo('Please place the male part on the table, and I will capture the location to pick it up')
     key=raw_input('When finished, press any key...')
 
-    #--------------- Get starting and Set the reference origin positions -----------------------
+    #--------------- Set Poses/Joints for all points in the PICK male hand operation  -----------------------
     if reference_origin_pose_flag:    # Used saved reference origin position
 
         ############################
@@ -116,13 +136,14 @@ def main():
         reference_origin_pose_flag=1
 
         # Back to home position
-        rospy.loginfo('I will move back to home posotion, and open the gripper...')
+        rospy.loginfo('I will move back to home position, and open the gripper...')
         rh.paHome_rightArm()
         ha.open()
         rospy.sleep(1.0)
 
     ########################################################
     #    Do: pa_localization
+    #    Provides a pick locatin (not the assembly reference pose)
     #    require: reference_origin_pose
     #    return:  picking_pose---{'position': picking_p, 'orientation': picking_q}
     ########################################################
@@ -145,22 +166,27 @@ def main():
     p_y=ref_y+picking_pose_visual.y
     p_z=ref_z
     q=tf.transformations.quaternion_from_euler(rot_rpy[0],rot_rpy[1],rot_rpy[2]+picking_pose_visual.angle,axes='sxyz').tolist()
+
     picking_p=baxter_interface.limb.Limb.Point(p_x,p_y,p_z)
     picking_q=baxter_interface.limb.Limb.Quaternion(q[0],q[1],q[2],q[3])
     picking_pose={'position': picking_p, 'orientation': picking_q}
 
     #--------------- Picking Process -----------------------
-    # Calculate ApproachPose
+    # Calculate the approach pose for the pick action
     approach_J_1,approach_J_2,pickingJoints=cal_pose.get_approach_joints_2(picking_pose)
 
+    # approach pose 1: for pick (z=picking_pose + 0.05)
     print(arm.endpoint_pose())
-
     rospy.loginfo('Start picking...')
     arm.move_to_joint_positions(approach_J_1)
     rospy.sleep(2.0)
+
+    # approach pose 2: for pick (z=picking_pose + 0.01)
     print(arm.endpoint_pose())
     arm.move_to_joint_positions(approach_J_2)
     rospy.sleep(2.0)
+
+    # picking pose
     print(arm.endpoint_pose())
     arm.move_to_joint_positions(pickingJoints)
     rospy.sleep(2.0)
@@ -170,13 +196,14 @@ def main():
     ha.close()
     rospy.sleep(2.0)
 
+    # Lift hand up in the same sequence
     rospy.loginfo('Lift up...')
     arm.move_to_joint_positions(approach_J_2)
     rospy.sleep(2.0)
     arm.move_to_joint_positions(approach_J_1)
     rospy.sleep(2.0)
 
-    #--------------- Set the reference placing positions -----------------------
+    #--------------- Set the reference placing/assembly positions -----------------------
     if reference_placing_pose_flag:    # Used saved reference origin position
 
         ############################
@@ -202,30 +229,56 @@ def main():
         reference_placing_pose_flag=1
 
         # Back to home position
-        rospy.loginfo('I will move back to home posotion, and open the gripper...')
+        rospy.loginfo('I will move back to home position, and open the gripper...')
         rh.paHome_rightArm()
         ha.open()
         rospy.sleep(1.0)
 
-    #--------------- Placing Process -----------------------
+    #--------------- Now set up the Placing Process -----------------------
+
     # Calculate ApproachPose
     approach_J_1,approach_J_2,placingJoints=cal_pose.get_approach_joints_2(placing_pose)
 
-    print(arm.endpoint_pose())
+    #------------------- Time Computation: Start -----------------------
+    rawStartTime=rospy.Time.now().to_sec() # Starting Time
+    startTime=rawStartTime-rawStartTime
+    wT.write(startTime)    # Write time to file to START_MOTION
 
+    # approach pose 1: for assembly
+    print(arm.endpoint_pose())
     rospy.loginfo('Start placing...')
     arm.move_to_joint_positions(approach_J_1)
     rospy.sleep(2.0)
+
+    # approach pose 2: for assembly
     print(arm.endpoint_pose())
     arm.move_to_joint_positions(approach_J_2)
+    #------------------- Time Computation -----------------------
+    rawRotationTime=rospy.Time.now().to_sec() 
+    rotationTime=rawRotationTime-rawStartTime
+    wT.write(rotationTime)    # Write time to file to ROTATION_MOTIONS
     rospy.sleep(2.0)
+
+    # reference/contact: for assembly
     print(arm.endpoint_pose())
     arm.move_to_joint_positions(placingJoints)
-    rospy.sleep(2.0)
+    #------------------- Time Computation -----------------------
+    rawMatingTime=rospy.Time.now().to_sec() 
+    matingTime=rawMatingTime-rawStartTime
+    insertionTime= (0.5*(matingTime-rotationTime))+rotationTime # Has to be approximated in this position-based controller
+    wT.write(insertionTime)  # Write time to file to INSERTION_MOTION
+    wT.write(matingTime)     # Write time to file to MATING_MOTION
+    rospy.sleep(2)
+
     print(arm.endpoint_pose())
 
     # open gripper
     ha.open()
+    #------------------- Time Computation -----------------------
+    rawStopTime=rospy.Time.now().to_sec()        
+    stopTime=rawStopTime-rawStartTime
+    wT.write(stopTime)    # Write time to file to STOP_DATA_CAPTURE
+    po.open()
     rospy.sleep(2.0)
 
     rospy.loginfo('Release and leave...')
