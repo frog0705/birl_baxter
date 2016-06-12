@@ -25,7 +25,7 @@
  </group>
 
   <!-- Joint Trajectory Action Server -->
-  <node name="joint_trajectory_action_server" pkg="baxter_interface" type="joint_trajectory_action_server.py" output="screen" respawn="true"/>
+  <node name="joint_trajectory_action_server" pkg="baxter_interface" type="joint_trajectory_action_server.py" args="-r 200" output="screen" respawn="true"/>
 
   <!-- Gripper Action Server -->
   <node name="gripper_action_server" pkg="baxter_interface" type="gripper_action_server.py" output="screen" respawn="true"/>

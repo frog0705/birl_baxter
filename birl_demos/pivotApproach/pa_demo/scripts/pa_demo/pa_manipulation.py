@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os.path 
 import ipdb
 import sys
 import argparse
@@ -26,7 +27,7 @@ reference_placing_pose_flag = 1 	# Used to determine whether to used the saved j
 
 # File Paths. If not in root, make sure string dose not start with /
 USER_PATH='/home/vmrguser/'
-RESULTS_PATH='ros/indigo/baxter_ws/src/birl_baxter/birl_demos/pa_demo/bags/'
+RESULTS_PATH='ros/indigo/baxter_ws/src/birl_baxter/birl_demos/pivotApproach/pa_demo/bags/'
 STATE_FILE='State.dat'
 #------------------------------------ Class ___________ ------------------------------
 class writeTime(object):
