@@ -1,0 +1,13 @@
+<launch>
+  <!-- Run a VoxelGrid filter -->
+  <node pkg="chapter6_tutorials" type="pcl_downsampling" name="pcl_downsampling" output="screen">
+    <remap from="pcl_filtered" to="/kinect2/sd/points" />
+    <rosparam>
+      filter_field_name: z
+      filter_limit_min: 0.5
+      filter_limit_max: 3.5
+      filter_limit_negative: False
+      leaf_size: 0.05
+    </rosparam>
+  </node>
+</launch>

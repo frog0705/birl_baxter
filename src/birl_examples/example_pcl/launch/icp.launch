@@ -1,0 +1,9 @@
+<launch>
+  <include file="$(find example_pcl)/launch/freenect_pcl.launch">
+  </include>
+
+  <node pkg="example_pcl" type="pcl_filter" name="pcl_filter" output="screen"/>
+  <node pkg="example_pcl" type="pcl_filter" name="pcl_downsampling" output="screen"/>
+  <node pkg="example_pcl" type="pcl_filter" name="pcl_matching" output="screen"/>    
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find example_pcl)/rviz/pcl.rviz"/>    
+</launch>

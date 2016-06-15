@@ -1,0 +1,20 @@
+<library path="src">
+  <class name="Example Gui Pub" type="example_gui_pub._example_gui_pub_module.ExampleGuiPub" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python plugin provider for the ROS GUI integrating plugins using rospy client library.
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>Example Gui Pub</label>
+      <statustip>Simple GUI to start LIDAR spinning</statustip>
+    </qtgui>
+  </class>
+</library>
+
