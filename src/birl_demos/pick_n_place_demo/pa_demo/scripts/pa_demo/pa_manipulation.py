@@ -18,6 +18,10 @@ import tf
 
 import threading
 
+# Uses a thread class to block the subscription spin. 
+# Thread calls a subscriber pointing to topic pick_location, with msg type pa_location, and callback self.callback.
+# data is placed is self._pose
+# This is later retrieved through an instantiated thread object that calls the method getPose
 class getPickingPose():
     def __init__(self):
         # Subscribe the pickingPose from pa_localization
@@ -80,7 +84,7 @@ def main():
 
     rospy.loginfo('Starting pa demo...')
 
-	# Step 1: Go to home position and open gripper to be ready to pick.
+    # Step 1: Go to home position and open gripper to be ready to pick.
     rospy.loginfo('I will first move to home position, and open the gripper...')
     rh.paHome_rightArm()
     ha.open()
@@ -91,7 +95,6 @@ def main():
     cal_pose=computerApproachPose(limb)
 
     #-------------- HARD-CODED Origin for Baxter using pa_localization on a 2D Plane.
-
     x= 0.543529946547
     y= -0.458792031781
     z= -0.132623004553
@@ -110,12 +113,14 @@ def main():
     startPose=arm.endpoint_pose()
     startJoints=kin.calIK_PY_KDL(startPose)
 
+    # Loop through pick n place until user kills node
     while not rospy.is_shutdown():
 
         # Put the male part on the table
         rospy.loginfo('Please put the male part on the table, and I will capture the location for picking')
         key=raw_input('When finished, press any key...')
 
+        # Getting an x,y,theta location called offset from pa_localization with the origin defined by the calibration algorithm in pa_localization
         rospy.loginfo("waiting for picking pose from camera...")
         rospy.sleep(2.0)
         pp_thread.lock()
@@ -125,41 +130,43 @@ def main():
 
         #---------------------------------------------------------------------------------------------------
         #  pa_localization
-		#  This section of the code implements a pick and place operation. We are picking boxes.
-		#  The program will acquire a "offset" x,y,theta location relative to an origin designated
-		#  by the pa_localization calibration routine. The arm, as seen above, has a reference "origin"
-		#  pose position.
-		#  
-		#  The first step of the program is to pick, the second step is to place.
-		#
-		#  PICKING:
-		#  To pick, we need to obtain the offset visual location and then apply the offset to the 
-		#  starting pose of the robot. For simplicity, the way we approach a target pose in this program
-		#  is by moving the arm to 2 points above the target pose. The first point will be some distance z1
-		#  above the target pose, say 5cm, the 2nd point is closer, z2=1cm above the target pose.
-		#  After that, we go for a pick from the top.
-		# 
-		#  PLACING:
-		#  For placing, the placing goal pose is hard-coded (this could easily be solved with the 
-		#  current pa_localization program asking to recognize the goal poses...).
-		#  The robot will move to the placing location along with the two step approach mentioned above.
+        #  This section of the code implements a pick and place operation. We are picking boxes.
+        #  The program will acquire a "offset" x,y,theta location relative to an origin designated
+        #  by the pa_localization calibration routine. The arm, as seen above, has a reference "origin"
+        #  pose position.
+        #  
+        #  The first step of the program is to pick, the second step is to place.
+        #
+        #  PICKING:
+        #  To pick, we need to obtain the offset visual location and then apply the offset to the 
+        #  starting pose of the robot. For simplicity, the way we approach a target pose in this program
+        #  is by moving the arm to 2 points above the target pose. The first point will be some distance z1
+        #  above the target pose, say 5cm, the 2nd point is closer, z2=1cm above the target pose.
+        #  After that, we go for a pick from the top.
+        # 
+        #  PLACING:
+        #  For placing, the placing goal pose is hard-coded (this could easily be solved with the 
+        #  current pa_localization program asking to recognize the goal poses...).
+        #  The robot will move to the placing location along with the two step approach mentioned above.
         #    require: reference_origin_pose
         #    return:  picking_pose---{'position': picking_p, 'orientation': picking_q}
         #---------------------------------------------------------------------------------------------------
 
-		# Set the origin pose as the picking pose or the reference pose.
+        # Set the origin pose as the picking pose or the reference pose.
         picking_pose=copy(origin_pose) # referring picking_pose from pa_localization to origin
 
+        # Position
         ref_x=copy(picking_pose['position'][0])
         ref_y=copy(picking_pose['position'][1])
         ref_z=copy(picking_pose['position'][2])
 
+        # Orientation
         ref_q=picking_pose['orientation']
         rot_mat=PyKDL.Rotation.Quaternion(ref_q.x,ref_q.y,ref_q.z,ref_q.w)
         rot_rpy=rot_mat.GetRPY()
         rot_rpy=list(rot_rpy)
 
-		# Now add the offset from the visual system
+        # Now add the offset from the visual system
         p_x=ref_x+picking_pose_visual.y
         p_y=ref_y+picking_pose_visual.x
         p_z=ref_z
@@ -176,9 +183,11 @@ def main():
         arm.move_to_joint_positions(approach_J_1)
         rospy.sleep(1.0)
         print(arm.endpoint_pose())
+        
         arm.move_to_joint_positions(approach_J_2)
         rospy.sleep(2.0)
         print(arm.endpoint_pose())
+        
         arm.move_to_joint_positions(pickingJoints)
         rospy.sleep(2.0)
         print(arm.endpoint_pose())
@@ -187,10 +196,11 @@ def main():
         ha.close()
         rospy.sleep(1.0)
 
-		# Lift up picked object.
+        # Lift up picked object.
         rospy.loginfo('Lift up...')
         arm.move_to_joint_positions(approach_J_2)
         rospy.sleep(1.0)
+        
         arm.move_to_joint_positions(approach_J_1)
         rospy.sleep(1.0)
 
@@ -202,14 +212,6 @@ def main():
         qy= -0.695809907218
         qz= 0.0273082981745
         qw= -0.00204546698183
-
-        # x= 0.551502038059
-        # y=-0.0176207852061
-    	# z=-0.134496202287
-    	# qx= 0.721767501695
-    	# qy= -0.691790773243
-    	# qz= 0.00497860983363
-    	# qw= -0.0212700022811
         #-----------------------------------------------------------------------------------------
 
         placing_p=baxter_interface.limb.Limb.Point(x,y,z)
@@ -218,15 +220,17 @@ def main():
 
         #--------------- Placing Process -----------------------
         # Calculate approach phase for placing action. 2 steps ahead of place. 
-        approach_J_1,approach_J_2,placingJoints=cal_pose.get_approach_joints_2(placing_pose,[0.0,0.0,0.05],[0.0,0.0,0.015p])
+        approach_J_1,approach_J_2,placingJoints=cal_pose.get_approach_joints_2(placing_pose,[0,0,0.05],[0,0,0.02])
 
         rospy.loginfo('Start placing...')
         arm.move_to_joint_positions(approach_J_1)
         rospy.sleep(2.0)
         print(arm.endpoint_pose())
+
         arm.move_to_joint_positions(approach_J_2)
         rospy.sleep(3.0)
         print(arm.endpoint_pose())
+
         arm.move_to_joint_positions(placingJoints)
         rospy.sleep(2.0)
         print(arm.endpoint_pose())
@@ -245,7 +249,7 @@ def main():
     	qw= 0.0994904325274
         #-------------------------------------------------------------------------------------------------------
 
-		# The midpoint is an intermediate step of where you could go before startin again. 
+        # The midpoint is an intermediate step of where you could go before startin again. 
         mid_p=baxter_interface.limb.Limb.Point(x,y,z)
         mid_q=baxter_interface.limb.Limb.Quaternion(qx,qy,qz,qw)
         mid_pose={'position':mid_p, 'orientation':mid_q}
