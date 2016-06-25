@@ -1,0 +1,20 @@
+/scripts
+  - baxter_kinematics.py: from baxter_pykdl import baxter_kinematics
+                          inits node
+                          creates object of baxter kinematics class
+                          uses object to compute fkine ikine jacobs
+
+/src
+baxter_kdl
+  - init.py: imports euler2quat,urdf_stuff,kdltree_from_urdf
+  - kdl_kinematics.py: provides wrappers for kdl funcs using urdf
+  - kdl_parser.py: defines funcs imported in init.py 
+
+baxter_pykdl
+  - init.py: from baxter_pykdl import baxter_kinematics
+  - baxter_pykdl: imports baxter_kdl for kdl_tree
+                  imports PyKDL calls solvers
+                  imports URDF
+                  
+                  baxter_kinematics_class
+                  we would have a file like this to create our example. 

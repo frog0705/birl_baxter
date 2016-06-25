@@ -1,0 +1,20 @@
+<launch>
+  <include file="$(find freenect_launch)/launch/freenect.launch">
+
+    <!-- use device registration -->
+    <arg name="depth_registration"              value="true" /> 
+
+    <arg name="rgb_processing"                  value="true" />
+    <arg name="ir_processing"                   value="false" />
+    <arg name="depth_processing"                value="false" />
+    <arg name="depth_registered_processing"     value="true" />
+    <arg name="disparity_processing"            value="false" />
+    <arg name="disparity_registered_processing" value="false" />
+    <arg name="sw_registered_processing"        value="false" />
+    <arg name="hw_registered_processing"        value="true" />
+
+  <node name="pcl_relay" pkg="topic_tools" type="relay" args="">
+    <remap from="/camera/depth_registered/points" to="pcl_output" />
+
+  </include>
+</launch>

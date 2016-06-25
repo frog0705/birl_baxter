@@ -1,0 +1,20 @@
+<library path="src">
+  <class name="Example Gui2" type="example_gui2._example_gui2_module.ExampleGui2" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python plugin provider for the ROS GUI integrating plugins using rospy client library.
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>Example Gui Hello</label>
+      <statustip>Simple GUI to greet the world</statustip>
+    </qtgui>
+  </class>
+</library>
+

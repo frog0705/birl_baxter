@@ -1,0 +1,8 @@
+In this folder we will contain programs that manipulate the grippers of the Baxter robot.
+
+Code will be organized by type of gripper. So far we have the following types:
+
+1. Rethink Standard Fingers:   2 finger electric grippers that come with Baxter.
+2. Pivot Approach Camera Mold: Specialized end-effector tool that holds camera molds. Derived from the openhand project. Still uses the standard actuators.
+3. Openhand Project:
+4. Yale Open Hand Project: 

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="gui" default="false"/>
+
+  <!-- 1. Load the URDF onto the parameter server -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(find baxter_description)/urdf/baxter.urdf'"/>
+
+  <!-- For teaching purposes, remove joint n robot publishers first -->
+  <!-- 2. Publish the State of the Joints -->``
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" >
+    <param name="use_gui" value="$(arg gui)" />
+  </node>
+
+  <!-- 3. Publish the state of a robot to tf-->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher">
+  </node>
+
+  <!-- 4. Start RVIZ -->
+  <node name="$(anon rviz-1)" pkg="rviz" type="rviz" args="-d $(find baxter_worlds)/rviz/display_baxter.rviz" output="screen">
+  </node>
+
+</launch>

@@ -1,0 +1,8 @@
+<launch>
+
+  <include file="$(find baxter_moveit_config)/launch/demo_baxter.launch"/>
+
+  <node name="move_group_python_interface_tutorial" pkg="example_moveit" type="move_group_python_interface_tutorial.py" respawn="false" output="screen">
+  </node>
+
+</launch>
