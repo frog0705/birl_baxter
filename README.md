@@ -15,6 +15,7 @@ To look at the demos please click on the links below:
 5. [Visual Servoing Demo](https://github.com/birlrobotics/birl_baxter/wiki/Visual_Servoing_Demo_en)
 6. [The Illusion of a Thinking Machine (Not in Simulation)](https://github.com/birlrobotics/birl_baxter/wiki/the_illusion_of_a_thinking_machine_en)
 7. Baxter Pick and Learn
-8. [Collaborative Manipulation](https://github.com/birlrobotics/birl_baxter/wiki/Collaborative_Manipulation_en) 
+8. [Collaborative Manipulation](https://github.com/birlrobotics/birl_baxter/wiki/Collaborative_Manipulation_en)
+9. [ein_demo](https://github.com/birlrobotics/birl_baxter/wiki/ein_demo)
 
 
