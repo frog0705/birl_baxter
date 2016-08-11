@@ -1,0 +1,242 @@
+(
+  endArgs "bottle" setClassLabels
+  tableMapBestClass
+  setPlaceModeToHold
+  "bottle" deliverObject
+  waitUntilAtCurrentPosition
+  goHome
+  waitUntilAtCurrentPosition
+  /*have a nice drinking motion*/
+  drinkPose moveEeToPoseWord
+  waitUntilAtCurrentPosition
+  8 waitForSeconds
+  /*finish drinking*/
+  assumeBackScanningPose
+  waitUntilAtCurrentPosition
+  openGripper
+  clearBlueBoxMemories
+  goHome
+) "haveADrink" store
+
+
+(
+  endArgs "brick" "clamp" setClassLabels
+  goHome
+  openGripper
+  waitUntilAtCurrentPosition
+  2 waitForSeconds
+  setPlaceModeToHold
+  tableMapBestClass
+
+  focusedClassLabel "brick" =
+  (
+  "brick" deliverObject
+  waitUntilAtCurrentPosition
+  comeToStop
+  ( zUp ) 10 replicateWord
+  goHome
+  waitUntilAtCurrentPosition
+  inputPileWorkspace moveEeToPoseWord
+  sadFace
+  waitUntilAtCurrentPosition
+  0.01 setGridSize
+  ( zDown ) 20 replicateWord
+  sadFace
+  waitUntilAtCurrentPosition
+  openGripper
+  goHome
+  clearBlueBoxMemories 
+  )
+  (
+    clampPick
+  ) ifte
+) "objectClassification" store
+
+(
+    endArgs "brick" setClassLabels
+    goHome
+    openGripper
+    waitUntilAtCurrentPosition
+    2 waitForSeconds
+    setPlaceModeToHold
+    tableMapBestClass
+
+    deliverTargetObject
+    comeToStop
+    goHome
+    waitUntilAtCurrentPosition
+    playWorkspace moveEeToPoseWord
+    waitUntilAtCurrentPosition
+    0.01 setGridSize
+    ( zDown ) 20 replicateWord
+    waitUntilAtCurrentPosition
+    openGripper
+    goHome
+    clearBlueBoxMemories
+    happyFace
+) "brickPick" store
+
+(
+    endArgs "clamp" setClassLabels
+    goHome
+    openGripper
+    waitUntilAtCurrentPosition
+    2 waitForSeconds
+    setPlaceModeToHold
+    tableMapBestClass
+
+    deliverTargetObject
+    comeToStop
+    goHome
+    waitUntilAtCurrentPosition
+    playWorkspace moveEeToPoseWord
+    waitUntilAtCurrentPosition
+    0.01 setGridSize
+    ( zDown ) 20 replicateWord
+    waitUntilAtCurrentPosition
+    openGripper
+    goHome
+    clearBlueBoxMemories
+    happyFace    
+
+) "clampPick" store
+
+(
+    endArgs "pen" setClassLabels
+    goHome
+    openGripper
+    waitUntilAtCurrentPosition
+    2 waitForSeconds
+    tableMapBestClass
+
+    setPlaceModeToHold
+    deliverTargetObject
+    closeGripper
+    comeToStop
+    goHome
+    waitUntilAtCurrentPosition
+    outputPileWorkspace moveEeToPoseWord
+    waitUntilAtCurrentPosition
+    0.01 setGridSize
+    ( zDown ) 20 replicateWord
+    waitUntilAtCurrentPosition
+    openGripper
+    goHome
+    clearBlueBoxMemories
+    happyFace     
+
+) "penPick" store
+
+(
+    endArgs "bottle" setClassLabels
+    goHome
+    openGripper
+    waitUntilAtCurrentPosition
+    2 waitForSeconds
+    setPlaceModeToHold
+    tableMapBestClass
+
+    "bottle" deliverObject
+    comeToStop
+    goHome
+    waitUntilAtCurrentPosition
+    outputPileWorkspace moveEeToPoseWord
+    waitUntilAtCurrentPosition
+    0.01 setGridSize
+    ( zDown ) 20 replicateWord
+    waitUntilAtCurrentPosition
+    openGripper
+    goHome
+    clearBlueBoxMemories
+    happyFace    
+
+) "bottlePick" store
+
+0.693698 -0.107515 0.571028 -0.747958 0.173060 0.114606 0.630456 createEEPose "drinkPose" store
+(
+  sadFace
+  ( torsoFanOn 1 waitForSeconds torsoFanOff 1 waitForSeconds ) 6 replicateWord
+  torsoFanAuto
+  happyFace
+) "cry" store
+
+(
+  halfImpulse
+  goHome
+  ( xUp ) 20 replicateWord
+  waitUntilAtCurrentPosition
+  ( xDown ) 20 replicateWord
+  waitUntilAtCurrentPosition
+  ( xDown ) 20 replicateWord
+  waitUntilAtCurrentPosition
+  ( xUp ) 20 replicateWord
+  waitUntilAtCurrentPosition
+
+	
+  ( yUp ) 20 replicateWord
+  waitUntilAtCurrentPosition
+  ( yDown ) 20 replicateWord
+  waitUntilAtCurrentPosition
+  ( yDown ) 20 replicateWord
+  waitUntilAtCurrentPosition
+  ( yUp ) 20 replicateWord
+  waitUntilAtCurrentPosition
+
+
+  ( zUp ) 10 replicateWord
+  waitUntilAtCurrentPosition
+  ( zDown ) 10 replicateWord
+  waitUntilAtCurrentPosition
+  ( zDown ) 10 replicateWord
+  waitUntilAtCurrentPosition
+  ( zUp ) 10 replicateWord
+  waitUntilAtCurrentPosition
+
+	
+  ( oXUp ) 60 replicateWord
+  waitUntilAtCurrentPosition
+  ( oXDown ) 60 replicateWord
+  waitUntilAtCurrentPosition
+  ( oXDown ) 60 replicateWord
+  waitUntilAtCurrentPosition
+  ( oXUp ) 60 replicateWord
+  waitUntilAtCurrentPosition
+
+
+  ( oYUp ) 60 replicateWord
+  waitUntilAtCurrentPosition
+  ( oYDown ) 60 replicateWord
+  waitUntilAtCurrentPosition
+  ( oYDown ) 60 replicateWord
+  waitUntilAtCurrentPosition
+  ( oYUp ) 60 replicateWord
+  waitUntilAtCurrentPosition
+
+
+  goHome
+  fullImpulse
+) "basicMove" store
+
+(
+  goHome
+  waitUntilAtCurrentPosition
+  neutralFace
+  assumeBackScanningPose
+  waitUntilAtCurrentPosition
+  backPose moveEeToPoseWord
+  0.05 setGridSize
+  ( zUp waitUntilAtCurrentPosition zDown waitUntilAtCurrentPosition ) 10 replicateWord
+  0.01 setGridSize
+  goHome
+) "backScan" store
+
+(
+  assumeCrane1
+  5 waitForSeconds
+  waitUntilAtCurrentPosition
+  playWorkspace moveEeToPoseWord
+  waitUntilAtCurrentPosition
+  goHome
+) "respawn" store
+
+-0.305582 -0.483668 0.187116 0.000965 0.99999 -0.000211 -0.000306 createEEPose "backPose" store
